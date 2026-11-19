@@ -1,0 +1,62 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# Virtual env
+.venv/
+venv/
+env/
+
+# Environment（含密钥，绝不入库）
+.env
+.cursor/rules/server-access.mdc
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+
+# 运行时数据
+data/candidates/
+*.log
+
+# 测试
+.pytest_cache/
+.coverage
+htmlcov/
+.workbuddy
+.cursor
+
+logs/
+data/*.sqlite
+*.pyc
+ui/node_modules/
+admin-web/node_modules/
+kb-web/node_modules/
+ui/.tanstack/tmp/
+ui/tsconfig.tsbuildinfo
+ui/.output/
+*.iml
+.tmp_fetch_url_workspace
+
+# LLM 模型池运行状态（额度冷却记账）
+data/llm_pool_state.json
+
+# 来源快照与每日养分漂移计数，运行时生成。
+data/snapshots/
+data/nutrient_drift.json
+
+# 外部数据包（中国食物成分表抓取结果等）：体积大、有版权限制，不进仓库。
+# 需要时从 fcd_crawler 抓一份放到这里，或用 scripts/import_fcd.py --file 指定。
+data/external/
+
+testdata/
+kb_pairs.jsonl
+kb_qa.jsonl

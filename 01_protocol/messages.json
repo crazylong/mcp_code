@@ -1,0 +1,256 @@
+{
+  "discover": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "server/discover",
+    "params": {
+      "_meta": {
+        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+        "io.modelcontextprotocol/clientInfo": {
+          "name": "demo-host",
+          "version": "0.1.0"
+        },
+        "io.modelcontextprotocol/clientCapabilities": {}
+      }
+    }
+  },
+  "discover_result": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "result": {
+      "_meta": {
+        "io.modelcontextprotocol/serverInfo": {
+          "name": "repo-tools",
+          "version": "4.2.2"
+        }
+      },
+      "ttlMs": 0,
+      "cacheScope": "private",
+      "supportedVersions": [
+        "2026-07-28"
+      ],
+      "capabilities": {
+        "logging": {},
+        "prompts": {
+          "listChanged": false
+        },
+        "resources": {
+          "subscribe": false,
+          "listChanged": false
+        },
+        "tools": {
+          "listChanged": false
+        }
+      },
+      "resultType": "complete"
+    }
+  },
+  "tools_list": {
+    "jsonrpc": "2.0",
+    "id": 2,
+    "method": "tools/list",
+    "params": {
+      "_meta": {
+        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+        "io.modelcontextprotocol/clientInfo": {
+          "name": "demo-host",
+          "version": "0.1.0"
+        },
+        "io.modelcontextprotocol/clientCapabilities": {}
+      }
+    }
+  },
+  "tools_list_result": {
+    "jsonrpc": "2.0",
+    "id": 2,
+    "result": {
+      "tools": [
+        {
+          "name": "repo_search",
+          "title": "Repo Search",
+          "description": "在指定仓库里按关键词检索代码。\n\n什么时候用：定位某个符号、配置项或报错文案在哪个文件。\n什么时候不用：已经知道路径，用 read_file；要改代码时不要用这个工具。\n返回：ok、items、total、truncated、next_cursor。truncated 为 true 表示后面还有。",
+          "inputSchema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "repo": {
+                "description": "owner/name，例如 acme/order",
+                "pattern": "^[\\w.-]+/[\\w.-]+$",
+                "type": "string"
+              },
+              "query": {
+                "description": "标识符或报错文案",
+                "minLength": 2,
+                "type": "string"
+              },
+              "limit": {
+                "default": 20,
+                "description": "返回条数",
+                "maximum": 50,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "cursor": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "default": null,
+                "description": "上一页的 next_cursor"
+              }
+            },
+            "required": [
+              "repo",
+              "query"
+            ]
+          },
+          "outputSchema": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "_meta": {
+            "fastmcp": {
+              "tags": []
+            }
+          }
+        },
+        {
+          "name": "read_file",
+          "title": "Read File",
+          "description": "读取一个文件的一段内容。\n\n什么时候用：已经知道路径，要看具体实现。\n什么时候不用：还不知道文件在哪，先用 repo_search。\n文件很长时只返回 max_lines 行，并用 truncated 说明这不是全文。",
+          "inputSchema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "path": {
+                "description": "仓库内相对路径",
+                "type": "string"
+              },
+              "offset": {
+                "default": 0,
+                "minimum": 0,
+                "type": "integer"
+              },
+              "max_lines": {
+                "default": 200,
+                "maximum": 200,
+                "minimum": 1,
+                "type": "integer"
+              }
+            },
+            "required": [
+              "path"
+            ]
+          },
+          "outputSchema": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "_meta": {
+            "fastmcp": {
+              "tags": []
+            }
+          }
+        },
+        {
+          "name": "note_finding",
+          "title": "Note Finding",
+          "description": "记录一条代码审查结论。相同 request_id 重复调用返回第一次的结果。",
+          "inputSchema": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "summary": {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              "request_id": {
+                "description": "调用方生成的幂等键",
+                "minLength": 8,
+                "type": "string"
+              }
+            },
+            "required": [
+              "path",
+              "summary",
+              "request_id"
+            ]
+          },
+          "outputSchema": {
+            "additionalProperties": true,
+            "type": "object"
+          },
+          "_meta": {
+            "fastmcp": {
+              "tags": []
+            }
+          }
+        }
+      ],
+      "ttlMs": 0,
+      "cacheScope": "private",
+      "resultType": "complete"
+    }
+  },
+  "tools_call": {
+    "jsonrpc": "2.0",
+    "id": 3,
+    "method": "tools/call",
+    "params": {
+      "name": "repo_search",
+      "arguments": {
+        "repo": "acme/order",
+        "query": "timeout",
+        "limit": 5
+      },
+      "_meta": {
+        "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+        "io.modelcontextprotocol/clientInfo": {
+          "name": "demo-host",
+          "version": "0.1.0"
+        },
+        "io.modelcontextprotocol/clientCapabilities": {}
+      }
+    }
+  },
+  "tools_call_result": {
+    "jsonrpc": "2.0",
+    "id": 3,
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "{\"items\":[{\"path\":\"src/Http.java\",\"line\":2,\"snippet\":\"int timeout = 3000;\"},{\"path\":\"src/Http.java\",\"line\":3,\"snippet\":\"void send() { log(\\\"timeout\\\"); }\"}],\"total\":2,\"truncated\":false,\"next_cursor\":null,\"ok\":true}"
+        }
+      ],
+      "structuredContent": {
+        "items": [
+          {
+            "path": "src/Http.java",
+            "line": 2,
+            "snippet": "int timeout = 3000;"
+          },
+          {
+            "path": "src/Http.java",
+            "line": 3,
+            "snippet": "void send() { log(\"timeout\"); }"
+          }
+        ],
+        "total": 2,
+        "truncated": false,
+        "next_cursor": null,
+        "ok": true
+      },
+      "isError": false,
+      "resultType": "complete"
+    }
+  }
+}

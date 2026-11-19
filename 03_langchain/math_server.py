@@ -1,0 +1,21 @@
+"""本地数学工具。由客户端以 stdio 子进程启动。"""
+
+from fastmcp import FastMCP
+
+mcp = FastMCP("Math")
+
+
+@mcp.tool
+def add(a: int, b: int) -> int:
+    """把两个整数相加。"""
+    return a + b
+
+
+@mcp.tool
+def multiply(a: int, b: int) -> int:
+    """把两个整数相乘。"""
+    return a * b
+
+
+if __name__ == "__main__":
+    mcp.run(transport="stdio")
