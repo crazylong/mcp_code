@@ -83,7 +83,15 @@ def repo_search(
         for number, line in enumerate(lines, start=1):
             if query.lower() in line.lower():
                 hits.append({"path": path, "line": number, "snippet": line.strip()})
-    body = page(hits, cursor, limit)
+    try:
+        body = page(hits, cursor, limit)
+    except ValueError:
+        return {
+            "ok": False,
+            "error": "bad_cursor",
+            "message": f"cursor 必须是上一页返回的 next_cursor，收到 {cursor!r}",
+            "next": "不传 cursor 从头查，或原样传回 next_cursor",
+        }
     body["ok"] = True
     return body
 
@@ -107,6 +115,13 @@ def read_file(
             "error": "not_found",
             "message": f"仓库里没有 {path}",
             "next": "先用 repo_search 确认路径",
+        }
+    if offset >= len(lines):
+        return {
+            "ok": False,
+            "error": "eof",
+            "message": f"{path} 只有 {len(lines)} 行，offset={offset} 已经在文件末尾之后",
+            "next": "用 offset=0 从头读，或把 offset 调到 total_lines 以内",
         }
     body = clip(lines, offset, max_lines)
     body.update({"ok": True, "path": path, "lines": f"{offset + 1}-{offset + body['content'].count(chr(10)) + 1}"})

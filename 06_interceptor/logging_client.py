@@ -5,11 +5,15 @@ middleware 列表的顺序就是嵌套顺序：第一个在最外层。
 """
 
 import asyncio
+import os
 import sys
 from pathlib import Path
 
+from dotenv import load_dotenv
 from langchain.agents.middleware import wrap_tool_call
 from langchain.mcp import MCPAdapter
+
+load_dotenv()  # 自动向上找 .env（在 mcp_code/ 下），模板见 .env.sample
 
 ORDER = Path(__file__).resolve().parent / "order_server.py"
 
@@ -42,7 +46,10 @@ async def call_query() -> str:
     from langchain.agents import create_agent
 
     tools = await load_tools()
-    agent = create_agent(model="openai:gpt-4.1", tools=tools, middleware=MIDDLEWARE)
+    model = os.environ.get("MCP_MODEL")
+    if not model:
+        raise SystemExit("没有配置模型：复制 .env.sample 为 .env，填 MCP_MODEL 和 OPENAI_API_KEY")
+    agent = create_agent(model=model, tools=tools, middleware=MIDDLEWARE)
     result = await agent.ainvoke(
         {"messages": [{"role": "user", "content": "查一下 ORD-001"}]}
     )
@@ -52,7 +59,7 @@ async def call_query() -> str:
 async def main() -> None:
     tools = await load_tools()
     print("工具:", [tool.name for tool in tools])
-    print("中间件:", [fn.__name__ for fn in MIDDLEWARE])
+    print("中间件:", [getattr(fn, "name", type(fn).__name__) for fn in MIDDLEWARE])
     if len(sys.argv) > 1 and sys.argv[1] == "--ask":
         print(await call_query())
 

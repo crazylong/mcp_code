@@ -3,5 +3,6 @@ fastmcp==4.2.2
 langchain[mcp]>=1.5.0
 langgraph>=1.2.23
 
-# 第 2、3、6 篇的 --ask 要跑真模型，按供应商另装一个包并设置 API key，例如：
-# langchain-openai
+# 第 2、3、6 篇的 --ask 跑真模型需要：OpenAI 兼容适配 + 读 .env
+langchain-openai>=1.8.5
+python-dotenv>=1.2.4

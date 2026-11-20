@@ -60,3 +60,9 @@ data/external/
 testdata/
 kb_pairs.jsonl
 kb_qa.jsonl
+
+# 本地虚拟环境（.venv-v4 等，含版本号后缀的）
+.venv*/
+
+# 认证示例生成的密钥与 token
+*/.local/

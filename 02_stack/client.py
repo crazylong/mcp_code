@@ -11,8 +11,11 @@ import os
 import sys
 from pathlib import Path
 
+from dotenv import load_dotenv
 from langchain.agents.middleware import wrap_tool_call
 from langchain.mcp import MCPAdapter
+
+load_dotenv()  # 自动向上找 .env（在 mcp_code/ 下），模板见 .env.sample
 
 SERVER = Path(__file__).resolve().parent / "server.py"
 
@@ -36,7 +39,7 @@ async def main() -> None:
 
     model = os.environ.get("MCP_MODEL")
     if not model:
-        print("设置 MCP_MODEL 后可跑完整 Agent，例如 openai:gpt-4.1")
+        print("没有配置模型：复制 .env.sample 为 .env，填 MCP_MODEL 和 OPENAI_API_KEY")
         return
 
     from langchain.agents import create_agent

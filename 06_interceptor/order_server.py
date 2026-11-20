@@ -22,10 +22,12 @@ async def query_order(order_id: str, caller_id: str = "") -> str:
 
 @mcp.tool
 async def process_refund(order_id: str) -> str:
-    """退款。只有已签收的订单可以退。"""
+    """退款。只有已签收的订单可以退；已退过的单重复调用返回第一次的结果。"""
     order = ORDERS.get(order_id)
     if order is None:
         return f"退款失败：未找到 {order_id}"
+    if order["status"] == "已退款":
+        return f"退款成功：{order_id}，{order['amount']} 元（重放，未重复退款）"
     if order["status"] != "已签收":
         return f"退款失败：当前状态是 {order['status']}"
     order["status"] = "已退款"
@@ -33,5 +35,5 @@ async def process_refund(order_id: str) -> str:
 
 
 if __name__ == "__main__":
-    # 给 MultiServerMCPClient 当子进程用。远程部署改成 transport="http"。
-    mcp.run(transport="stdio")
+    # 给 Client / MCPAdapter 当子进程用。远程部署改成 transport="http"。
+    mcp.run(transport="stdio", show_banner=False)

@@ -13,6 +13,7 @@ def map_order(row: dict) -> dict:
 
 
 def to_legacy_page(cursor: str | None, limit: int) -> dict:
+    """cursor 必须是上一页给的页码字符串。非数字直接 ValueError，由工具层转成 ok: false。"""
     page_no = int(cursor or 1)
     if page_no < 1:
         page_no = 1

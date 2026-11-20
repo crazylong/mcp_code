@@ -14,7 +14,10 @@ import os
 import sys
 from pathlib import Path
 
+from dotenv import load_dotenv
 from langchain.mcp import MCPAdapter
+
+load_dotenv()  # 自动向上找 .env（在 mcp_code/ 下），模板见 .env.sample
 
 ROOT = Path(__file__).resolve().parent
 MATH = ROOT / "math_server.py"
@@ -47,7 +50,7 @@ async def ask(question: str, with_weather: bool) -> str:
 
     model = os.environ.get("MCP_MODEL")
     if not model:
-        raise SystemExit("设置 MCP_MODEL 后再使用 --ask，例如 openai:gpt-4.1")
+        raise SystemExit("没有配置模型：复制 .env.sample 为 .env，填 MCP_MODEL 和 OPENAI_API_KEY")
     tools = await load_tools(with_weather)
     agent = create_agent(model=model, tools=tools)
     response = await agent.ainvoke({"messages": [{"role": "user", "content": question}]})

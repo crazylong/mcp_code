@@ -27,6 +27,7 @@ sys.path[:0] = [
 from adapt import from_legacy_page, status_code, to_legacy_page  # noqa: E402
 from bulkhead import call  # noqa: E402
 from chart_entry import generate_visualization  # noqa: E402
+from client_hold import ClientHold  # noqa: E402
 from elicit_client import run_local as elicit_local  # noqa: E402
 from fingerprint import check, fingerprint  # noqa: E402
 from gates import authorize  # noqa: E402
@@ -36,9 +37,10 @@ from import_client import run_local as import_local  # noqa: E402
 from inject_context import CustomerContext, inject_caller  # noqa: E402
 import legacy_api  # noqa: E402
 import order_mcp  # noqa: E402
+from order_server import process_refund  # noqa: E402
 from read_context import load_background  # noqa: E402
 from refund_guard import StopAfterRefund, refunded  # noqa: E402
-from repo_server import clip, mcp as repo_mcp, note_finding, page, repo_search  # noqa: E402
+from repo_server import clip, mcp as repo_mcp, note_finding, page, read_file, repo_search  # noqa: E402
 from roots import inside_roots  # noqa: E402
 
 
@@ -123,6 +125,41 @@ async def check_servers() -> None:
     expect("导入完成" in text and "写入数据库" in messages, "progress")
     elicit = await elicit_local()
     expect("已覆盖" in elicit, f"elicit got {elicit}")
+
+
+def check_errors() -> None:
+    """错误要变成可纠正的返回值，而不是把异常抛给模型。"""
+    bad = repo_search("acme/order", "timeout", cursor="abc")
+    expect(bad["ok"] is False and bad["error"] == "bad_cursor" and bad["next"], "bad cursor")
+    bad_legacy = order_mcp.query_orders(cursor="abc")
+    expect(bad_legacy["error"] == "bad_cursor", "legacy bad cursor")
+    eof = read_file("src/Http.java", offset=99)
+    expect(eof["ok"] is False and eof["error"] == "eof", "read_file eof")
+
+    prev_base, prev_cookie = order_mcp.BASE, order_mcp.COOKIE
+    try:
+        order_mcp.BASE = "http://127.0.0.1:1"  # 关着的端口，连接会被拒绝
+        order_mcp.COOKIE = ""
+        timed_out = order_mcp.query_orders(limit=1)
+        expect(timed_out["error"] == "upstream_timeout" and timed_out["next"], "upstream timeout")
+    finally:
+        order_mcp.BASE, order_mcp.COOKIE = prev_base, prev_cookie
+
+
+async def check_services() -> None:
+    first = await process_refund("ORD-001")
+    second = await process_refund("ORD-001")
+    expect("退款成功" in first, f"refund first: {first}")
+    expect("重放" in second, f"refund replay: {second}")
+
+    from fastmcp import Client
+
+    hold = ClientHold(repo_mcp)
+    client = await hold.open()
+    names = [tool.name for tool in await client.list_tools()]
+    expect("repo_search" in names, "ClientHold 列出工具")
+    await hold.close()
+    expect(hold.client is None, "ClientHold 关闭后清空引用")
 
 
 def check_policy() -> None:
@@ -231,8 +268,10 @@ async def main() -> None:
     check_paging()
     check_messages_sync()
     check_legacy()
+    check_errors()
     check_policy()
     await check_servers()
+    await check_services()
     await check_middleware()
     await check_bulkhead()
     print("samples ok")

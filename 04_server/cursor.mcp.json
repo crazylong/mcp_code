@@ -2,7 +2,7 @@
   "mcpServers": {
     "repo-tools": {
       "command": "python",
-      "args": ["/ABS/PATH/TO/mcp/mcp_code/03_server/repo_server.py"],
+      "args": ["/ABS/PATH/TO/mcp/mcp_code/04_server/repo_server.py"],
       "env": {
         "PYTHONIOENCODING": "utf-8"
       }

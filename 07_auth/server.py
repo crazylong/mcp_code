@@ -21,9 +21,11 @@ BUDGETS = {
 
 
 def load_verifier() -> JWTVerifier:
-    public_key = Path(os.environ.get("MCP_PUBLIC_KEY_FILE", LOCAL / "public.pem")).read_text()
+    pem = Path(os.environ.get("MCP_PUBLIC_KEY_FILE", LOCAL / "public.pem"))
+    if not pem.exists():
+        raise SystemExit(f"找不到公钥 {pem}，先运行：python mcp_code/07_auth/gen_token.py")
     return JWTVerifier(
-        public_key=public_key,
+        public_key=pem.read_text(),
         issuer=os.environ.get("MCP_ISSUER", "https://auth.example.com"),
         audience=os.environ.get("MCP_AUDIENCE", "http://127.0.0.1:8765/mcp"),
     )
