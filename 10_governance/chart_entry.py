@@ -1,4 +1,4 @@
-"""26 个图表工具收成一个入口。类型白名单留在代码里，不留给模型自由发挥。"""
+"""十几个图表工具收成一个入口。类型白名单留在代码里，不留给模型自由发挥。"""
 
 CHARTS = {
     "bar": lambda config: {"mark": "bar", "x": config["x"], "y": config["y"]},
@@ -7,7 +7,7 @@ CHARTS = {
 }
 
 
-def generate_visualization(chart_type: str, chart_config: dict) -> dict:
+def chart_render(chart_type: str, chart_config: dict) -> dict:
     """按 chart_type 路由。未知类型直接拒绝，不把近似名字交给模型猜。"""
     renderer = CHARTS.get(chart_type)
     if renderer is None:

@@ -38,15 +38,20 @@ def caller() -> dict:
     token = get_access_token()
     if token is None:
         raise PermissionError("unauthenticated")
-    return {"sub": token.claims["sub"], "dept": token.claims.get("dept"), "scopes": token.scopes}
+    return {
+        "sub": token.claims["sub"],
+        "dept": token.claims.get("dept"),
+        "employee_id": token.claims.get("employee_id"),
+        "scopes": token.scopes,
+    }
 
 
 @mcp.tool(auth=require_scopes("employee:read"))
 def query_employee(employee_id: str) -> str:
-    """查询员工。只能查 token 主体自己的档案，查不到和不是本人用同一句回复。"""
+    """查询员工。只能查 token 授权范围内的员工档案，查不到和越权用同一句回复。"""
     who = caller()
     row = EMPLOYEES.get(employee_id)
-    if row is None or employee_id != who["sub"]:
+    if row is None or employee_id != who["employee_id"]:
         return "未找到该员工"
     return f"{row['name']}，{row['department']}"
 

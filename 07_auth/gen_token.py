@@ -10,7 +10,7 @@ ISSUER = "https://auth.example.com"
 AUDIENCE = "http://127.0.0.1:8765/mcp"
 
 
-def issue(scopes: list[str], subject: str, dept: str) -> dict:
+def issue(scopes: list[str], subject: str, dept: str, employee_id: str) -> dict:
     key_pair = RSAKeyPair.generate()
     token = key_pair.create_token(
         subject=subject,
@@ -18,7 +18,7 @@ def issue(scopes: list[str], subject: str, dept: str) -> dict:
         audience=AUDIENCE,
         scopes=scopes,
         expires_in_seconds=3600,
-        additional_claims={"dept": dept},
+        additional_claims={"dept": dept, "employee_id": employee_id},
     )
     OUT.mkdir(parents=True, exist_ok=True)
     (OUT / "public.pem").write_text(key_pair.public_key)
@@ -28,6 +28,7 @@ def issue(scopes: list[str], subject: str, dept: str) -> dict:
         "audience": AUDIENCE,
         "subject": subject,
         "dept": dept,
+        "employee_id": employee_id,
         "scopes": scopes,
     }
     (OUT / "meta.json").write_text(json.dumps(meta, ensure_ascii=False, indent=2))
@@ -35,4 +36,9 @@ def issue(scopes: list[str], subject: str, dept: str) -> dict:
 
 
 if __name__ == "__main__":
-    print(issue(["employee:read", "budget:read"], subject="E001", dept="技术部"))
+    print(issue(
+        ["employee:read", "budget:read"],
+        subject="agent:scheduler",
+        dept="技术部",
+        employee_id="E001",
+    ))

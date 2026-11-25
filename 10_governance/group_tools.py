@@ -19,6 +19,6 @@ def group_by_prefix(names: list[str], prefixes: dict[str, str]) -> dict[str, lis
 ROLES = {
     "poi_": "analysis",
     "weather_": "analysis",
-    "generate_": "analysis",
+    "chart_": "analysis",
     "order_": "ordering",
 }
